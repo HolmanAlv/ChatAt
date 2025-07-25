@@ -1,0 +1,20 @@
+#Python version 3.13.5
+
+fastapi
+uvicorn[standard]
+sqlalchemy
+asyncpg
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+python-multipart       # uploads
+redis>=5               # pub/sub sockets
+psycopg2
+#email-validator
+
+
+#Testing
+pytest
+pytest-asyncio
+httpx               # Para hacer pruebas de endpoints
+loguru              # Mejor logging que print()
