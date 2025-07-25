@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from app.database import engine, Base
 from app.routers import users, friends, groups, messages, content
 from app.routers import auth
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 """
 Ejecutar ubicado en backend/:
@@ -9,6 +12,15 @@ uvicorn app.main:app --reload
 """
 
 app = FastAPI(title="Messaging API")
+origins = ["http://localhost:3000"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Incluir routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])

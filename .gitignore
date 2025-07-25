@@ -53,3 +53,4 @@ Thumbs.db
 *.bak
 *.tmp
 *.orig
+.env

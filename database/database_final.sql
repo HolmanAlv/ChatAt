@@ -21,7 +21,8 @@ CREATE TABLE usuario (
     apellido VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     fecha_registro TIMESTAMP DEFAULT NOW(),
-    image_url TEXT
+    image_url TEXT,
+    contrasena_hash VARCHAR(128) not null default 'user'
 );
 CREATE INDEX idx_usuario_nombre ON usuario (nombre);
 CREATE INDEX idx_usuario_apellido ON usuario (apellido);
@@ -35,15 +36,15 @@ CREATE TABLE amistad (
 );
 -- Agregar columna 'status' si no existe
 ALTER TABLE "amistad"
-ADD COLUMN IF NOT EXISTS status VARCHAR(10) NOT NULL DEFAULT 'pending';
+ADD COLUMN IF NOT EXISTS estado VARCHAR(10) NOT NULL DEFAULT 'pending';
 
 -- Agregar columna 'created_at' si no existe
 ALTER TABLE "amistad"
-ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ADD COLUMN IF NOT EXISTS fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
 -- Agregar columna 'updated_at' si no existe
 ALTER TABLE "amistad"
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ADD COLUMN IF NOT EXISTS fecha_actualizacion TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
 -- Tabla de grupos
 CREATE TABLE grupo (
