@@ -3,6 +3,11 @@ from app.database import engine, Base
 from app.routers import users, friends, groups, messages, content
 from app.routers import auth
 
+"""
+Ejecutar ubicado en backend/:
+uvicorn app.main:app --reload
+"""
+
 app = FastAPI(title="Messaging API")
 
 # Incluir routers
