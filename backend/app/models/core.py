@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -64,6 +65,7 @@ class Grupo(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(100), nullable=False)
     creador_id = Column(Integer, ForeignKey('usuario.id', ondelete='SET NULL'))
+    invite_token  = Column(String(36), unique=True, default=lambda: str(uuid.uuid4()))
     fecha_creacion = Column(TIMESTAMP(timezone=True), server_default=func.now())
     imagen_url = Column(Text)
     
@@ -75,7 +77,7 @@ class Pertenece(Base):
     __tablename__ = 'pertenece'
     grupo_id = Column(Integer, ForeignKey('grupo.id', ondelete='CASCADE'), primary_key=True)
     usuario_id = Column(Integer, ForeignKey('usuario.id', ondelete='CASCADE'), primary_key=True)
-    
+    role       = Column(String(10), nullable=False, default='member')
     grupo = relationship('Grupo', back_populates='miembros')
     usuario = relationship('Usuario', back_populates='grupos')
 

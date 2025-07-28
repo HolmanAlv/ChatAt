@@ -1,3 +1,4 @@
+import secrets
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -7,20 +8,49 @@ from app.database import get_db
 
 router = APIRouter()
 
-@router.post("/", response_model=schemas.GrupoOut, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=schemas.GrupoDetail, status_code=status.HTTP_201_CREATED)
 def create_group(gr: schemas.GrupoCreate, db: Session = Depends(get_db)):
-    # Verificar creador
-    if not db.query(models.Usuario).get(gr.creador_id):
+    # 1. Verificar que el creador existe
+    creador = db.query(models.Usuario).get(gr.creador_id)
+    if not creador:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Usuario creador no existe")
-    new = models.Grupo(**gr.dict())
-    db.add(new)
+
+    # 2. Generar token de invitación
+    token = secrets.token_urlsafe(16)
+
+    # 3. Construir datos de grupo excluyendo 'miembros'
+    group_data = gr.dict(exclude={"miembros"})
+    group = models.Grupo(**group_data, invite_token=token)
+    db.add(group)
     db.commit()
-    db.refresh(new)
-    # Agregar al creador como miembro automático
-    membership = models.Pertenece(grupo_id=new.id, usuario_id=gr.creador_id)
-    db.add(membership)
+    db.refresh(group)
+
+    # 4. Agregar creador como admin
+    db.add(models.Pertenece(grupo_id=group.id, usuario_id=gr.creador_id, role="admin"))
+
+    # 5. Agregar miembros iniciales solo si la amistad está aceptada
+    for user_id in gr.miembros:
+        print("Id del usuario amigo: ", user_id)
+        fr = db.query(models.Amistad).filter(
+            ((models.Amistad.usuario_id == gr.creador_id) & (models.Amistad.amigo_id == user_id)) |
+            ((models.Amistad.usuario_id == user_id) & (models.Amistad.amigo_id == gr.creador_id)),
+            models.Amistad.estado == "accepted"
+        ).first()
+        if fr:
+            db.add(models.Pertenece(grupo_id=group.id, usuario_id=user_id, role="member"))
     db.commit()
-    return new
+
+    # 6. Preparar detalle de grupo con miembros
+    members = db.query(models.Pertenece).filter_by(grupo_id=group.id).all()
+    return schemas.GrupoDetail(
+        id=group.id,
+        nombre=group.nombre,
+        creador_id=group.creador_id,
+        invite_token=group.invite_token,
+        fecha_creacion=group.fecha_creacion,
+        imagen_url=group.imagen_url,
+        miembros=members
+    )
 
 @router.get("/", response_model=List[schemas.GrupoOut])
 def list_groups(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

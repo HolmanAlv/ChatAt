@@ -45,19 +45,36 @@ class AmistadOut(AmistadBase):
         orm_mode = True
 
 # Grupo
+
+
+class MiembroOut(BaseModel):
+    usuario_id: int
+    role: str
+    class Config:
+        orm_mode = True
 class GrupoBase(BaseModel):
     nombre: str
     imagen_url: Optional[str]
 
-class GrupoCreate(GrupoBase):
-    pass
+class GrupoCreate(BaseModel):
+    nombre: str
+    creador_id: int
+    imagen_url: Optional[str] = None
+    miembros: Optional[List[int]] = []      # IDs iniciales
 
-class GrupoOut(GrupoBase):
+class GrupoOut(BaseModel):
     id: int
+    nombre: str
     creador_id: Optional[int]
+    invite_token: str
     fecha_creacion: datetime
+    imagen_url: Optional[str]
     class Config:
         orm_mode = True
+
+class GrupoDetail(GrupoOut):
+    miembros: List[MiembroOut]
+
 
 # Mensaje
 class MensajeBase(BaseModel):

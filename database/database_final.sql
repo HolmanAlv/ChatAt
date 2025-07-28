@@ -54,6 +54,9 @@ CREATE TABLE grupo (
     fecha_creacion TIMESTAMP DEFAULT NOW(),
     imagen_url     TEXT
 );
+ALTER TABLE grupo
+ADD COLUMN IF NOT EXISTS invite_token VARCHAR(36) UNIQUE DEFAULT gen_random_uuid();
+
 
 -- Miembros del grupo
 CREATE TABLE pertenece (
@@ -61,6 +64,11 @@ CREATE TABLE pertenece (
     usuario_id INT REFERENCES usuario(id) ON DELETE CASCADE,
     PRIMARY KEY (grupo_id, usuario_id)
 );
+
+ALTER TABLE pertenece
+ADD COLUMN IF NOT EXISTS role VARCHAR(10) NOT NULL DEFAULT 'member';
+
+
 
 -- Tabla de mensajes
 CREATE TABLE mensaje (
