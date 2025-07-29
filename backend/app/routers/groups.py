@@ -18,9 +18,13 @@ def create_group(gr: schemas.GrupoCreate, db: Session = Depends(get_db)):
     # 2. Generar token de invitación
     token = secrets.token_urlsafe(16)
 
-    # 3. Construir datos de grupo excluyendo 'miembros'
-    group_data = gr.dict(exclude={"miembros"})
-    group = models.Grupo(**group_data, invite_token=token)
+    # 3. Crear grupo excluyendo 'miembros' y usando invite_token
+    group = models.Grupo(
+        nombre=gr.nombre,
+        creador_id=gr.creador_id,
+        imagen_url=gr.imagen_url,
+        invite_token=token
+    )
     db.add(group)
     db.commit()
     db.refresh(group)
@@ -30,7 +34,6 @@ def create_group(gr: schemas.GrupoCreate, db: Session = Depends(get_db)):
 
     # 5. Agregar miembros iniciales solo si la amistad está aceptada
     for user_id in gr.miembros:
-        print("Id del usuario amigo: ", user_id)
         fr = db.query(models.Amistad).filter(
             ((models.Amistad.usuario_id == gr.creador_id) & (models.Amistad.amigo_id == user_id)) |
             ((models.Amistad.usuario_id == user_id) & (models.Amistad.amigo_id == gr.creador_id)),
@@ -46,9 +49,9 @@ def create_group(gr: schemas.GrupoCreate, db: Session = Depends(get_db)):
         id=group.id,
         nombre=group.nombre,
         creador_id=group.creador_id,
-        invite_token=group.invite_token,
         fecha_creacion=group.fecha_creacion,
         imagen_url=group.imagen_url,
+        invite_token=group.invite_token,
         miembros=members
     )
 

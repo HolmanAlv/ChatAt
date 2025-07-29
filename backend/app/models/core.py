@@ -65,9 +65,9 @@ class Grupo(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(100), nullable=False)
     creador_id = Column(Integer, ForeignKey('usuario.id', ondelete='SET NULL'))
-    invite_token  = Column(String(36), unique=True, default=lambda: str(uuid.uuid4()))
     fecha_creacion = Column(TIMESTAMP(timezone=True), server_default=func.now())
     imagen_url = Column(Text)
+    invite_token  = Column(String(36), unique=True, default=lambda: str(uuid.uuid4()))
     
     creador = relationship('Usuario')
     miembros = relationship('Pertenece', back_populates='grupo', cascade='all, delete')

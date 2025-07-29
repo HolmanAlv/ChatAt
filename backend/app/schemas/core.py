@@ -66,9 +66,9 @@ class GrupoOut(BaseModel):
     id: int
     nombre: str
     creador_id: Optional[int]
-    invite_token: str
     fecha_creacion: datetime
     imagen_url: Optional[str]
+    invite_token: str
     class Config:
         orm_mode = True
 
