@@ -15,6 +15,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/registro-exito" element={<RegistroExito />} />
         <Route path="/chat" element={<Chat />} />
+        {/* <Route path="/menu" element={<MenuPrincipal />} /> */}
         <Route
   path="/menu"
   element={

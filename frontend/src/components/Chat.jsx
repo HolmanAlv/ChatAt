@@ -14,7 +14,7 @@ export default function Chat({ nombre = "Usuario", tipo = "Privado", mensajes = 
       {/* Header */}
       <div className="flex items-center bg-white shadow-md px-4 py-3 rounded-md mb-4">
         <button
-          onClick={() => console.log("volver a chats")}
+          onClick={() => window.history.back()}
           className="text-purple-600 text-2xl mr-3 hover:text-green-400"
         >
           ←

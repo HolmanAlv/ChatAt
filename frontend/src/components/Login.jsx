@@ -1,11 +1,47 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [mensaje, setMensaje] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMensaje("Función de login pendiente...");
+    setSuccess(false);
+    try {
+      const resp = await fetch("http://localhost:8000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (resp.status !== 200) {
+        throw new Error("Error al iniciar sesión");
+      }
+
+      const data = await resp.json();
+      setMensaje(data.mensaje || "¡Inicio de sesión exitoso!");
+      setSuccess(true);
+
+      setTimeout(() => {
+        navigate("/menu");
+      }, 1000); // Puedes ajustar o eliminar el delay
+    } catch (error) {
+      setMensaje("Error al iniciar sesión.");
+      setSuccess(false);
+    }
   };
 
   return (
@@ -15,17 +51,25 @@ export default function Login() {
         <h1 className="text-3xl font-bold mb-2 text-gray-800">Iniciar Sesión</h1>
         <p className="text-gray-500 mb-6">Accede a tu cuenta para comenzar a chatear</p>
         {mensaje && (
-          <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">{mensaje}</div>
+          <div className={`p-3 rounded-md mb-4 ${success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+            {mensaje}
+          </div>
         )}
         <form onSubmit={handleSubmit}>
           <input
             type="text"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
             placeholder="Correo Electrónico"
             className="w-full border rounded-md px-3 py-2 mb-4 focus:outline-none focus:ring focus:ring-indigo-300"
             required
           />
           <input
             type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
             placeholder="Contraseña"
             className="w-full border rounded-md px-3 py-2 mb-4 focus:outline-none focus:ring focus:ring-indigo-300"
             required

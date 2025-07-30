@@ -64,7 +64,7 @@ export default function MenuPrincipal({
 
         {/* Botón de cerrar sesión */}
         <button
-            onClick={() => navigate("/logout")}
+            onClick={() => navigate("/")}
             className="w-[90%] mx-auto my-6 block bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 rounded-lg text-lg font-semibold hover:from-green-400 hover:to-blue-500 transition"
         >
             Cerrar sesión
