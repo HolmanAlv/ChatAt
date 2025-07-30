@@ -18,27 +18,20 @@ export default function Register() {
           <div className="bg-green-100 text-green-700 p-3 rounded-md mb-4">{mensaje}</div>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <select className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-300">
-            <option>Seleccione una ubicación</option>
-          </select>
           <input
             type="text"
             placeholder="Nombre"
             className="w-full border rounded-md px-3 py-2"
             required
           />
+          
           <input
             type="text"
             placeholder="Apellido"
             className="w-full border rounded-md px-3 py-2"
             required
           />
-          <input
-            type="text"
-            placeholder="Usuario"
-            className="w-full border rounded-md px-3 py-2"
-            required
-          />
+          
           <input
             type="email"
             placeholder="Correo electrónico"
@@ -46,8 +39,8 @@ export default function Register() {
             required
           />
           <input
-            type="text"
-            placeholder="Celular"
+            type="password"
+            placeholder="Contraseña"
             className="w-full border rounded-md px-3 py-2"
             required
           />

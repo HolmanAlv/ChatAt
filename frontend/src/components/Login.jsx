@@ -20,7 +20,7 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           <input
             type="text"
-            placeholder="Usuario"
+            placeholder="Correo Electrónico"
             className="w-full border rounded-md px-3 py-2 mb-4 focus:outline-none focus:ring focus:ring-indigo-300"
             required
           />
