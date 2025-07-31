@@ -46,7 +46,6 @@ class AmistadOut(AmistadBase):
 
 # Grupo
 
-
 class MiembroOut(BaseModel):
     usuario_id: int
     role: str
@@ -77,10 +76,19 @@ class GrupoDetail(GrupoOut):
 
 
 # Mensaje
+
+class ReaccionOut(BaseModel):
+    usuario_id: int
+    tipo: str
+    fecha: datetime
+    class Config:
+        orm_mode = True
+
 class MensajeBase(BaseModel):
-    emisor_id: Optional[int]
+    emisor_id: int
     receptor_id: Optional[int]
     grupo_id: Optional[int]
+    reply_to_id: Optional[int]
     estado_envio: Optional[str]
     estado_lectura: Optional[str]
 
@@ -91,6 +99,9 @@ class MensajeCreate(MensajeBase):
 class MensajeOut(MensajeBase):
     id: int
     fecha_envio: datetime
+    estado_envio: str
+    estado_lectura: str
+    reacciones: List[ReaccionOut] = []
     class Config:
         orm_mode = True
 

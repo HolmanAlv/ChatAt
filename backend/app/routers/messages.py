@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from app import schemas, models
 from app.database import get_db
+from app.routers.ws import manager
 
 router = APIRouter()
 
@@ -36,7 +37,21 @@ def create_message(msg: schemas.MensajeCreate, db: Session = Depends(get_db)):
         )
         db.add(c)
         db.commit()
+
+    # 2. Determinar destinatarios WS
+    targets = []
+    if new.receptor_id:
+        targets = [new.receptor_id]
+    elif new.grupo_id:
+        # todos los miembros del grupo
+        targets = [p.usuario_id for p in db.query(models.Pertenece)
+                                    .filter_by(grupo_id=new.grupo_id)]
+    # 3. Enviar WS
+    import asyncio
+    message_data = schemas.MensajeOut.from_orm(new).dict()
+    asyncio.create_task(manager.send(targets, message_data))
     return new
+
 
 @router.get("/", response_model=List[schemas.MensajeOut])
 def list_messages(

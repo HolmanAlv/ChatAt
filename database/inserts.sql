@@ -1,18 +1,18 @@
 -- --------------------------------------------------
 -- 10 inserts para la tabla usuario
 -- --------------------------------------------------
--- contra: Password123!
+-- contra: prueba123
 INSERT INTO usuario (nombre, apellido, email, fecha_registro, image_url, contrasena_hash) VALUES
-('Alice',    'García',    'alice.garcia@example.com',     '2025-07-01 09:15:00', 'https://example.com/images/alice.jpg',    '$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e'),
-('Bob',      'Martínez',  'bob.martinez@example.com',     '2025-07-02 10:20:00', 'https://example.com/images/bob.jpg',      '$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e'),
-('Carolina', 'López',     'carolina.lopez@example.com',   '2025-07-03 11:30:00', 'https://example.com/images/carolina.jpg','$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e'),
-('Diego',    'Fernández', 'diego.fernandez@example.com',  '2025-07-04 12:45:00', 'https://example.com/images/diego.jpg',    '$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e'),
-('Elena',    'Rodríguez', 'elena.rodriguez@example.com',  '2025-07-05 14:00:00', 'https://example.com/images/elena.jpg',    '$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e'),
-('Fernando', 'Sánchez',   'fernando.sanchez@example.com', '2025-07-06 15:15:00', 'https://example.com/images/fernando.jpg','$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e'),
-('Gabriela', 'Herrera',   'gabriela.herrera@example.com', '2025-07-07 16:30:00', 'https://example.com/images/gabriela.jpg','$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e'),
-('Hugo',     'Vargas',    'hugo.vargas@example.com',      '2025-07-08 17:45:00', 'https://example.com/images/hugo.jpg',      '$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e'),
-('Isabel',   'Morales',   'isabel.morales@example.com',   '2025-07-09 18:55:00', 'https://example.com/images/isabel.jpg',   '$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e'),
-('Javier',   'Castro',    'javier.castro@example.com',    '2025-07-10 20:00:00', 'https://example.com/images/javier.jpg',    '$2b$12$eQiq3U6py1JZlZmMk9bd2uY9b6JHpi3nynhyuvlLzkhX5u4T6v9e');
+('Alice',    'García',    'alice.garcia@example.com',     '2025-07-01 09:15:00', 'https://example.com/images/alice.jpg',    '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi'),
+('Bob',      'Martínez',  'bob.martinez@example.com',     '2025-07-02 10:20:00', 'https://example.com/images/bob.jpg',      '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi'),
+('Carolina', 'López',     'carolina.lopez@example.com',   '2025-07-03 11:30:00', 'https://example.com/images/carolina.jpg', '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi'),
+('Diego',    'Fernández', 'diego.fernandez@example.com',  '2025-07-04 12:45:00', 'https://example.com/images/diego.jpg',    '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi'),
+('Elena',    'Rodríguez', 'elena.rodriguez@example.com',  '2025-07-05 14:00:00', 'https://example.com/images/elena.jpg',    '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi'),
+('Fernando', 'Sánchez',   'fernando.sanchez@example.com', '2025-07-06 15:15:00', 'https://example.com/images/fernando.jpg', '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi'),
+('Gabriela', 'Herrera',   'gabriela.herrera@example.com', '2025-07-07 16:30:00', 'https://example.com/images/gabriela.jpg', '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi'),
+('Hugo',     'Vargas',    'hugo.vargas@example.com',      '2025-07-08 17:45:00', 'https://example.com/images/hugo.jpg',     '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi'),
+('Isabel',   'Morales',   'isabel.morales@example.com',   '2025-07-09 18:55:00', 'https://example.com/images/isabel.jpg',   '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi'),
+('Javier',   'Castro',    'javier.castro@example.com',    '2025-07-10 20:00:00', 'https://example.com/images/javier.jpg',   '$2b$12$hlZBBs27iYhCPmZUmCk.Vel2mzWDIQ1kDRy.nqbo6wW3CYDe5WbEi');
 
 -- --------------------------------------------------
 -- 10 inserts para el catálogo tipocontenido
