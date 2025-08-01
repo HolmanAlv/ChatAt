@@ -13,6 +13,7 @@ uvicorn app.main:app --reload
 
 app = FastAPI(title="Messaging API")
 origins = [
+    #TODO conectar con el frontend. El front no envia al back. El error esta en el frontend
     "http://localhost:3000",
     "http://frontend:3000"
 ]
