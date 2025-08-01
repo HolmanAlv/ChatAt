@@ -23,7 +23,7 @@ export default function Register() {
     e.preventDefault();
     setSuccess(false);
     try {
-      const resp = await fetch("http://localhost:8000/auth/register", {
+      const resp = await fetch("/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

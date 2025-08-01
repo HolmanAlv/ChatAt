@@ -19,7 +19,7 @@ export default function Login() {
     e.preventDefault();
     setSuccess(false);
     try {
-      const resp = await fetch("http://localhost:8000/auth/login", {
+      const resp = await fetch("/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
