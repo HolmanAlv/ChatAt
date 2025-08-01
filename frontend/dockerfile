@@ -1,5 +1,5 @@
 # frontend/Dockerfile
-FROM node:12 as build
+FROM node:18 as build
 WORKDIR /app
 COPY . .
 RUN npm install && npm run build
