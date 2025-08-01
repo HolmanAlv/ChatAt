@@ -80,7 +80,16 @@ CREATE TABLE mensaje (
     estado_envio   VARCHAR(20) DEFAULT 'enviado',
     estado_lectura VARCHAR(20) DEFAULT 'no_leído'
 );
+ALTER TABLE mensaje
+ADD COLUMN IF NOT EXISTS reply_to_id INT REFERENCES mensaje(id) ON DELETE SET NULL;
 
+CREATE TABLE IF NOT EXISTS reaccion (
+    id          SERIAL PRIMARY KEY,
+    mensaje_id  INT   REFERENCES mensaje(id) ON DELETE CASCADE,
+    usuario_id  INT   REFERENCES usuario(id) ON DELETE CASCADE,
+    tipo        VARCHAR(50) NOT NULL,    -- e.g. '👍','❤️'
+    fecha       TIMESTAMPTZ DEFAULT NOW()
+);
 -- Contenido del mensaje
 CREATE TABLE contenido (
     id             SERIAL PRIMARY KEY,

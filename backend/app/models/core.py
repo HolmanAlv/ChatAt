@@ -78,6 +78,7 @@ class Pertenece(Base):
     grupo_id = Column(Integer, ForeignKey('grupo.id', ondelete='CASCADE'), primary_key=True)
     usuario_id = Column(Integer, ForeignKey('usuario.id', ondelete='CASCADE'), primary_key=True)
     role       = Column(String(10), nullable=False, default='member')
+    
     grupo = relationship('Grupo', back_populates='miembros')
     usuario = relationship('Usuario', back_populates='grupos')
 
@@ -90,11 +91,26 @@ class Mensaje(Base):
     fecha_envio = Column(TIMESTAMP(timezone=True), server_default=func.now())
     estado_envio = Column(String(20), default='enviado')
     estado_lectura = Column(String(20), default='no_leído')
+    reply_to_id    = Column(Integer, ForeignKey('mensaje.id', ondelete='SET NULL'), nullable=True)
     
-    emisor = relationship('Usuario', foreign_keys=[emisor_id], back_populates='mensajes_enviados')
-    receptor = relationship('Usuario', foreign_keys=[receptor_id], back_populates='mensajes_recibidos')
-    grupo = relationship('Grupo', back_populates='mensajes')
+    # Relaciones
+    emisor    = relationship('Usuario', foreign_keys=[emisor_id])
+    receptor  = relationship('Usuario', foreign_keys=[receptor_id])
+    grupo     = relationship('Grupo')
+    reply_to  = relationship('Mensaje', remote_side=[id])
+    reacciones = relationship('Reaccion', back_populates='mensaje', cascade='all, delete')
     contenidos = relationship('Contenido', back_populates='mensaje', cascade='all, delete')
+
+class Reaccion(Base):
+    __tablename__ = 'reaccion'
+    id          = Column(Integer, primary_key=True, index=True)
+    mensaje_id  = Column(Integer, ForeignKey('mensaje.id', ondelete='CASCADE'))
+    usuario_id  = Column(Integer, ForeignKey('usuario.id', ondelete='CASCADE'))
+    tipo        = Column(String(50), nullable=False)
+    fecha       = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    mensaje = relationship('Mensaje', back_populates='reacciones')
+    usuario = relationship('Usuario')
 
 class Contenido(Base):
     __tablename__ = 'contenido'

@@ -54,3 +54,4 @@ Thumbs.db
 *.tmp
 *.orig
 .env
+.aws

@@ -7,6 +7,41 @@ from app.database import get_db
 
 router = APIRouter()
 
+@router.get("/{user_id}/all", response_model=List[schemas.UsuarioOut])
+def get_user_friends(user_id: int, db: Session = Depends(get_db)):
+    """
+    Devuelve todos los usuarios con los que user_id tiene amistad aceptada.
+    Considera ambas direcciones de la relación para que sea simétrica.
+    """
+    # Verificar que el usuario exista
+    me = db.query(models.Usuario).get(user_id)
+    if not me:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+
+    # Relaciones donde yo soy quien envió y fue aceptada
+    sent = (
+        db.query(models.Amistad)
+            .filter_by(usuario_id=user_id, estado="accepted")
+            .all()
+    )
+    # Relaciones donde yo soy quien recibió y fue aceptada
+    rec = (
+        db.query(models.Amistad)
+            .filter_by(amigo_id=user_id, estado="accepted")
+            .all()
+    )
+
+    # Consolidar IDs de amigos
+    friend_ids = [rel.amigo_id for rel in sent] + [rel.usuario_id for rel in rec]
+    if not friend_ids:
+        return []
+
+    # Obtener datos de los usuarios amigos
+    amigos = db.query(models.Usuario).filter(models.Usuario.id.in_(friend_ids)).all()
+    return amigos
+
+
+
 @router.post("/", response_model=schemas.AmistadOut, status_code=status.HTTP_201_CREATED)
 def send_request(req: schemas.AmistadCreate, db: Session = Depends(get_db)):
     if req.usuario_id == req.amigo_id:
