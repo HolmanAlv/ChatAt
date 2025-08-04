@@ -63,7 +63,7 @@ export default function Login() {
       setMensaje(`Bienvenido ${data.nombre} ${data.apellido}!`);
       setSuccess(true);
 
-      // Aquí podrías guardar token o info del usuario si tu backend lo envía
+      // Aqui se puede guardar el token de usuario, si se llega a implementar
       setTimeout(() => navigate("/menu"), 1000);
     } catch (error) {
       setMensaje(error.message);
