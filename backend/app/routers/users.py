@@ -37,3 +37,10 @@ def search_users(
         .all()
     )
     return resultados
+
+@router.get("/{user_id}", response_model=schemas.UsuarioOut)
+def get_user(user_id: int, db: Session = Depends(database.get_db)):
+    user = db.query(models.Usuario).get(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return user

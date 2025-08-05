@@ -38,17 +38,15 @@ export default function Login() {
     setMensaje("");
     setSuccess(false);
 
-    // Validar antes de enviar
     const emailError = validarEmail(form.email);
     const passwordError = validarPassword(form.password);
-
     if (emailError || passwordError) {
       setErrores({ email: emailError, password: passwordError });
       return;
     }
 
     try {
-      const resp = await fetch("http://localhost:8000/login", {
+      const resp = await fetch("http://localhost:8000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -60,10 +58,14 @@ export default function Login() {
       }
 
       const data = await resp.json();
+      // Guardar ID del usuario en localStorage
+      localStorage.setItem("userId", data.id);
+      // Opcional: también puedes guardar el nombre completo si lo usas mucho
+      localStorage.setItem("userName", `${data.nombre} ${data.apellido}`);
+
       setMensaje(`Bienvenido ${data.nombre} ${data.apellido}!`);
       setSuccess(true);
 
-      // Aqui se puede guardar el token de usuario, si se llega a implementar
       setTimeout(() => navigate("/menu"), 1000);
     } catch (error) {
       setMensaje(error.message);
