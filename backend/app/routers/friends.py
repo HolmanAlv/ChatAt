@@ -4,6 +4,7 @@ from typing import List
 
 from app import schemas, models
 from app.database import get_db
+from sqlalchemy.orm import joinedload
 
 router = APIRouter()
 
@@ -61,17 +62,39 @@ def send_request(req: schemas.AmistadCreate, db: Session = Depends(get_db)):
     # TODO: aquí puedes publicar en Redis o WebSocket para notificar al receptor
     return fr
 
-@router.get("/incoming/{user_id}", response_model=List[schemas.AmistadOut])
+@router.get("/incoming/{user_id}", response_model=List[schemas.AmistadDetail])
 def list_incoming(user_id: int, db: Session = Depends(get_db)):
-    """Solicitudes PENDING dirigidas al usuario"""
-    return db.query(models.Amistad).filter_by(
-        amigo_id=user_id, estado="pending"
-    ).all()
+    """
+    Solicitudes de amistad pendientes recibidas por el usuario con detalles del solicitante y receptor
+    """
+    return (
+        db.query(models.Amistad)
+        .options(joinedload(models.Amistad.usuario), joinedload(models.Amistad.amigo))
+        .filter(models.Amistad.amigo_id == user_id, models.Amistad.estado == "pending")
+        .all()
+    )
 
-@router.get("/sent/{user_id}", response_model=List[schemas.AmistadOut])
+
+@router.get("/sent/{user_id}")
 def list_sent(user_id: int, db: Session = Depends(get_db)):
-    """Solicitudes enviadas por el usuario (cualquier estado)"""
-    return db.query(models.Amistad).filter_by(usuario_id=user_id).all()
+    """
+    Devuelve las solicitudes enviadas por el usuario con nombre y apellido del receptor
+    """
+    solicitudes = (
+        db.query(models.Amistad, models.Usuario)
+        .join(models.Usuario, models.Amistad.amigo_id == models.Usuario.id)
+        .filter(models.Amistad.usuario_id == user_id)
+        .all()
+    )
+    result = []
+    for amistad, usuario in solicitudes:
+        result.append({
+            "amigo_id": usuario.id,
+            "amigo_nombre": usuario.nombre,
+            "amigo_apellido": usuario.apellido,
+            "estado": amistad.estado
+        })
+    return result
 
 @router.patch("/{usuario_id}/{amigo_id}", response_model=schemas.AmistadOut)
 def respond_request(
