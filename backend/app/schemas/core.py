@@ -119,20 +119,27 @@ class MensajeBase(BaseModel):
     estado_lectura: Optional[str]
 
 
-class MensajeCreate(MensajeBase):
-    texto: Optional[str]
-    contenidos: Optional[List[int]] = []
+class MensajeCreate(BaseModel):
+    emisor_id: int
+    receptor_id: Optional[int] = None
+    grupo_id: Optional[int] = None
+    texto: Optional[str] = None
 
 
-class MensajeOut(MensajeBase):
+class MensajeOut(BaseModel):
     id: int
+    emisor_id: int
+    emisor_nombre: Optional[str] = None   
+    receptor_id: Optional[int]
+    grupo_id: Optional[int]
+    reply_to_id: Optional[int]
     fecha_envio: datetime
     estado_envio: str
     estado_lectura: str
-    reacciones: List[ReaccionOut] = []
-
+    texto: Optional[str] = None
     class Config:
         orm_mode = True
+
 
 # =======================
 # CONTENIDO

@@ -3,6 +3,9 @@ from app.database import engine, Base
 from app.routers import users, friends, groups, messages, content, ws
 from app.routers import auth
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
+
 
 
 
@@ -20,6 +23,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if not os.path.exists("static"):
+    os.makedirs("static")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Incluir routers
