@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Login() {
+export default function Login({ onLogin }) {
   const [mensaje, setMensaje] = useState("");
   const [success, setSuccess] = useState(false);
   const [errores, setErrores] = useState({ email: "", password: "" });
@@ -58,10 +58,15 @@ export default function Login() {
       }
 
       const data = await resp.json();
-      // Guardar ID del usuario en localStorage
-      localStorage.setItem("userId", data.id);
-      // Opcional: también puedes guardar el nombre completo si lo usas mucho
-      localStorage.setItem("userName", `${data.nombre} ${data.apellido}`);
+      
+      // Call onLogin callback if provided
+      if (onLogin) {
+        onLogin(data);
+      } else {
+        // Fallback to localStorage
+        localStorage.setItem("userId", data.id);
+        localStorage.setItem("userName", `${data.nombre} ${data.apellido}`);
+      }
 
       setMensaje(`Bienvenido ${data.nombre} ${data.apellido}!`);
       setSuccess(true);

@@ -10,6 +10,7 @@ python-dotenv
 python-multipart       # uploads
 redis>=5               # pub/sub sockets
 psycopg2
+websockets             # WebSocket client for testing
 #email-validator
 
 
