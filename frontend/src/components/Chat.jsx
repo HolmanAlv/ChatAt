@@ -2,6 +2,25 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { getBackendUrl } from "../config";
 
+// Componente para previsualizar archivos de texto
+const TextPreview = ({ file }) => {
+  const [content, setContent] = useState("");
+
+  useEffect(() => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result;
+        // Mostrar solo las primeras 200 caracteres
+        setContent(text.substring(0, 200) + (text.length > 200 ? "..." : ""));
+      };
+      reader.readAsText(file);
+    }
+  }, [file]);
+
+  return <span className="text-gray-800">{content}</span>;
+};
+
 export default function Chat() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -102,7 +121,8 @@ export default function Chat() {
 
   const handleArchivoSeleccionado = (file) => {
     setArchivo(file);
-    if (file && file.type.startsWith("image/")) {
+    // Crear previsualización para todos los tipos de archivo
+    if (file) {
       setPreviewArchivo(URL.createObjectURL(file));
     } else {
       setPreviewArchivo(null);
@@ -151,7 +171,7 @@ export default function Chat() {
                 <div className="mt-2">
                   {m.contenidos.map((c, idx) => (
                     <div key={idx} className="mt-2">
-                                             {c.tipo_archivo?.startsWith("image/") ? (
+                                                                    {c.tipo_archivo?.startsWith("image/") ? (
                          <div className="flex justify-center">
                            <img
                              src={`${BACKEND_URL}${c.archivo_url}`}
@@ -163,31 +183,71 @@ export default function Chat() {
                              }}
                            />
                          </div>
-                      ) : c.tipo_archivo ? (
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                          <span className="text-2xl">
-                            {c.tipo_archivo.startsWith("video/") ? "🎥" :
-                             c.tipo_archivo.startsWith("audio/") ? "🎵" :
-                             c.tipo_archivo.includes("pdf") ? "📄" :
-                             c.tipo_archivo.includes("word") || c.tipo_archivo.includes("document") ? "📝" :
-                             c.tipo_archivo.includes("excel") || c.tipo_archivo.includes("spreadsheet") ? "📊" :
-                             c.tipo_archivo.includes("zip") || c.tipo_archivo.includes("rar") ? "📦" :
-                             "📎"}
-                          </span>
-                          <div className="flex-1">
-                                                         <a
+                       ) : c.tipo_archivo?.startsWith("video/") ? (
+                         <div className="flex justify-center">
+                           <video
+                             src={`${BACKEND_URL}${c.archivo_url}`}
+                             controls
+                             className="max-w-[400px] max-h-[400px] rounded-lg shadow-lg"
+                             onError={(e) => {
+                               e.currentTarget.style.display = "none";
+                             }}
+                           />
+                         </div>
+                       ) : c.tipo_archivo?.startsWith("audio/") ? (
+                         <div className="flex justify-center">
+                           <audio
+                             src={`${BACKEND_URL}${c.archivo_url}`}
+                             controls
+                             className="w-full max-w-[400px]"
+                             onError={(e) => {
+                               e.currentTarget.style.display = "none";
+                             }}
+                           />
+                         </div>
+                                              ) : c.tipo_archivo?.includes("pdf") ? (
+                         <div className="flex flex-col items-center">
+                           <iframe
+                             src={`${BACKEND_URL}${c.archivo_url}`}
+                             className="w-full max-w-[400px] h-[500px] rounded-lg shadow-lg border"
+                             title="PDF Viewer"
+                             onError={(e) => {
+                               e.currentTarget.style.display = "none";
+                             }}
+                           />
+                           <a
+                             href={`${BACKEND_URL}${c.archivo_url}`}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="text-blue-600 hover:text-blue-800 font-medium mt-2"
+                           >
+                             Abrir PDF en nueva pestaña
+                           </a>
+                         </div>
+                       ) : c.tipo_archivo ? (
+                         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                                        <span className="text-2xl">
+                               {c.tipo_archivo.includes("word") || c.tipo_archivo.includes("document") ? "📝" :
+                                c.tipo_archivo.includes("excel") || c.tipo_archivo.includes("spreadsheet") || c.tipo_archivo.includes("csv") ? "📊" :
+                                c.tipo_archivo.includes("powerpoint") || c.tipo_archivo.includes("presentation") ? "📽️" :
+                                c.tipo_archivo.includes("zip") || c.tipo_archivo.includes("rar") || c.tipo_archivo.includes("7z") ? "📦" :
+                                c.tipo_archivo.includes("text") || c.tipo_archivo.includes("txt") ? "📄" :
+                                "📎"}
+                             </span>
+                           <div className="flex-1">
+                                                          <a
                                href={`${BACKEND_URL}${c.archivo_url}`}
                                target="_blank"
                                rel="noopener noreferrer"
                                className="text-blue-600 hover:text-blue-800 font-medium"
                              >
-                              {c.texto || "Descargar archivo"}
-                            </a>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {c.tipo_archivo}
-                            </p>
-                          </div>
-                        </div>
+                               {c.texto || "Descargar archivo"}
+                             </a>
+                             <p className="text-xs text-gray-500 mt-1">
+                               {c.tipo_archivo}
+                             </p>
+                           </div>
+                         </div>
                       ) : (
                         <div className="text-red-500 text-sm">Tipo de archivo no reconocido: {c.tipo_archivo}</div>
                       )}
@@ -204,19 +264,74 @@ export default function Chat() {
         <div ref={mensajesEndRef} />
       </div>
 
-      {/* Preview de archivo */}
+            {/* Preview de archivo */}
       {previewArchivo && (
         <div className="mb-4 bg-white rounded-lg shadow-lg p-4 flex items-center gap-4">
-          <img
-            src={previewArchivo}
-            alt="Vista previa"
-            className="h-20 w-20 object-cover rounded-lg shadow"
-          />
+          {archivo.type.startsWith("image/") ? (
+            <img
+              src={previewArchivo}
+              alt="Vista previa"
+              className="h-20 w-20 object-cover rounded-lg shadow"
+            />
+          ) : archivo.type.startsWith("video/") ? (
+            <video
+              src={previewArchivo}
+              className="h-20 w-20 object-cover rounded-lg shadow"
+              muted
+              onLoadedMetadata={(e) => {
+                e.target.currentTime = 1; // Mostrar un frame del video
+              }}
+            />
+          ) : archivo.type.startsWith("audio/") ? (
+            <div className="h-20 w-20 bg-gray-100 rounded-lg shadow flex items-center justify-center">
+              <span className="text-3xl">🎵</span>
+            </div>
+                    ) : archivo.type.includes("pdf") ? (
+            <div className="h-20 w-20 bg-gray-100 rounded-lg shadow flex items-center justify-center">
+              <span className="text-3xl">📄</span>
+            </div>
+          ) : archivo.type.includes("text") || archivo.type.includes("txt") ? (
+            <div className="h-20 w-20 bg-gray-100 rounded-lg shadow flex items-center justify-center">
+              <span className="text-3xl">📄</span>
+            </div>
+          ) : (
+            <div className="h-20 w-20 bg-gray-100 rounded-lg shadow flex items-center justify-center">
+              <span className="text-3xl">
+                {archivo.type.includes("word") || archivo.type.includes("document") ? "📝" :
+                 archivo.type.includes("excel") || archivo.type.includes("spreadsheet") || archivo.type.includes("csv") ? "📊" :
+                 archivo.type.includes("powerpoint") || archivo.type.includes("presentation") ? "📽️" :
+                 archivo.type.includes("zip") || archivo.type.includes("rar") || archivo.type.includes("7z") ? "📦" :
+                 "📎"}
+              </span>
+            </div>
+          )}
           <div className="flex-1">
             <p className="text-gray-700 font-medium">{archivo.name}</p>
             <p className="text-xs text-gray-500">
-              {(archivo.size / 1024 / 1024).toFixed(2)} MB
+              {(archivo.size / 1024 / 1024).toFixed(2)} MB • {archivo.type}
             </p>
+            {/* Mostrar contenido de archivos de texto */}
+            {(archivo.type.includes("text") || archivo.type.includes("txt")) && (
+              <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-20 overflow-y-auto">
+                <p className="text-gray-600">Vista previa del contenido:</p>
+                <TextPreview file={archivo} />
+              </div>
+            )}
+            {/* Mostrar previsualización de PDF */}
+            {archivo.type.includes("pdf") && (
+              <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
+                <p className="text-gray-600">PDF - {archivo.name}</p>
+                <p className="text-gray-500">Se mostrará embebido en el chat</p>
+              </div>
+            )}
+            {/* Mostrar información para otros tipos de archivo */}
+            {!archivo.type.includes("text") && !archivo.type.includes("txt") && !archivo.type.includes("pdf") && 
+             !archivo.type.startsWith("image/") && !archivo.type.startsWith("video/") && !archivo.type.startsWith("audio/") && (
+              <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
+                <p className="text-gray-600">{archivo.name}</p>
+                <p className="text-gray-500">Archivo para descargar</p>
+              </div>
+            )}
           </div>
           <button
             onClick={() => {
@@ -244,12 +359,12 @@ export default function Chat() {
         />
         <label className="cursor-pointer bg-gray-200 rounded-md px-3 py-2 hover:bg-gray-300 transition-colors">
           <span className="text-lg">📎</span>
-          <input
-            type="file"
-            onChange={(e) => handleArchivoSeleccionado(e.target.files[0])}
-            className="hidden"
-            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar"
-          />
+                     <input
+             type="file"
+             onChange={(e) => handleArchivoSeleccionado(e.target.files[0])}
+             className="hidden"
+             accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.txt,.csv,.ppt,.pptx"
+           />
         </label>
         <button
           type="submit"
