@@ -15,7 +15,7 @@ uvicorn app.main:app --reload
 """
 
 app = FastAPI(title="Messaging API")
-origins = ["http://localhost:3000"]
+origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -24,10 +24,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-if not os.path.exists("static"):
-    os.makedirs("static")
+if not os.path.exists("uploads"):
+    os.makedirs("uploads")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 # Incluir routers

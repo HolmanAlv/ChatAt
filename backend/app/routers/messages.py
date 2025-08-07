@@ -50,8 +50,16 @@ def create_message(msg: schemas.MensajeCreate, db: Session = Depends(get_db)):
         targets = [p.usuario_id for p in db.query(models.Pertenece)
                                      .filter_by(grupo_id=new.grupo_id)]
     # Enviar notificación WS (si manager está activo)
-    message_data = schemas.MensajeOut.from_orm(new).dict()
-    asyncio.create_task(manager.send(targets, message_data))
+    try:
+        message_data = schemas.MensajeOut.from_orm(new).dict()
+        # Solo crear task si hay un event loop corriendo
+        try:
+            asyncio.create_task(manager.send(targets, message_data))
+        except RuntimeError:
+            # Si no hay event loop, ignorar la notificación WS
+            pass
+    except Exception as e:
+        print(f"Error al enviar notificación WS: {e}")
 
     return new
 
@@ -63,7 +71,14 @@ def list_messages(
     group_id: Optional[int] = None,
     db: Session = Depends(get_db)
 ):
-    q = db.query(models.Mensaje).options(joinedload(models.Mensaje.emisor))
+    q = (
+        db.query(models.Mensaje)
+        .options(
+            joinedload(models.Mensaje.emisor),
+            joinedload(models.Mensaje.contenidos)  # 🔹 carga contenidos de una vez
+        )
+    )
+
     if group_id:
         q = q.filter(models.Mensaje.grupo_id == group_id)
     elif user1_id and user2_id:
@@ -74,26 +89,29 @@ def list_messages(
             )
         )
     else:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            detail="Debes proporcionar group_id o ambos user IDs")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Debes proporcionar group_id o ambos user IDs")
 
     mensajes = q.order_by(models.Mensaje.fecha_envio).all()
 
     resultado = []
     for m in mensajes:
-        contenido_texto = db.query(models.Contenido).filter_by(
-            mensaje_id=m.id, tipo_contenido="texto"
-        ).first()
-        resultado.append({
-            "id": m.id,
-            "emisor_id": m.emisor_id,
-            "emisor_nombre": f"{m.emisor.nombre} {m.emisor.apellido}" if m.emisor else None,
-            "receptor_id": m.receptor_id,
-            "grupo_id": m.grupo_id,
-            "reply_to_id": m.reply_to_id,
-            "fecha_envio": m.fecha_envio,
-            "estado_envio": m.estado_envio,
-            "estado_lectura": m.estado_lectura,
-            "texto": contenido_texto.texto if contenido_texto else None
-        })
+        # Crear el objeto de respuesta
+        mensaje_out = schemas.MensajeOut(
+            id=m.id,
+            emisor_id=m.emisor_id,
+            emisor_nombre=f"{m.emisor.nombre} {m.emisor.apellido}" if m.emisor else None,
+            receptor_id=m.receptor_id,
+            grupo_id=m.grupo_id,
+            reply_to_id=m.reply_to_id,
+            fecha_envio=m.fecha_envio,
+            estado_envio=m.estado_envio,
+            estado_lectura=m.estado_lectura,
+            texto=next((c.texto for c in m.contenidos if c.tipo_contenido == "texto"), None),
+            contenidos=[
+                schemas.ContenidoOut.from_orm(c)
+                for c in m.contenidos if c.tipo_contenido == "archivo"
+            ]
+        )
+        
+        resultado.append(mensaje_out)
     return resultado

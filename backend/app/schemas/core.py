@@ -21,7 +21,7 @@ class UsuarioOut(UsuarioBase):
     fecha_registro: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # =======================
 # AMISTAD
@@ -45,7 +45,7 @@ class AmistadOut(AmistadBase):
     fecha_actualizacion: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # NUEVO: para mostrar detalle de usuario y amigo en una sola respuesta
 class AmistadDetail(BaseModel):
@@ -58,7 +58,7 @@ class AmistadDetail(BaseModel):
     amigo: UsuarioOut
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # =======================
 # GRUPO
@@ -68,7 +68,7 @@ class MiembroOut(BaseModel):
     role: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class GrupoBase(BaseModel):
@@ -92,11 +92,33 @@ class GrupoOut(BaseModel):
     invite_token: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class GrupoDetail(GrupoOut):
     miembros: List[MiembroOut]
+
+# =======================
+# CONTENIDO
+# =======================
+class ContenidoBase(BaseModel):
+    mensaje_id: int
+    tipo_contenido: str
+    tipo_archivo: Optional[str]
+    texto: Optional[str]
+    archivo_url: Optional[str]
+
+
+class ContenidoCreate(ContenidoBase):
+    pass
+
+
+class ContenidoOut(ContenidoBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
 
 # =======================
 # MENSAJE
@@ -107,7 +129,7 @@ class ReaccionOut(BaseModel):
     fecha: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class MensajeBase(BaseModel):
@@ -129,7 +151,7 @@ class MensajeCreate(BaseModel):
 class MensajeOut(BaseModel):
     id: int
     emisor_id: int
-    emisor_nombre: Optional[str] = None   
+    emisor_nombre: Optional[str] = None
     receptor_id: Optional[int]
     grupo_id: Optional[int]
     reply_to_id: Optional[int]
@@ -137,30 +159,10 @@ class MensajeOut(BaseModel):
     estado_envio: str
     estado_lectura: str
     texto: Optional[str] = None
-    class Config:
-        orm_mode = True
-
-
-# =======================
-# CONTENIDO
-# =======================
-class ContenidoBase(BaseModel):
-    mensaje_id: int
-    tipo_contenido: str
-    tipo_archivo: Optional[str]
-    texto: Optional[str]
-    archivo_url: Optional[str]
-
-
-class ContenidoCreate(ContenidoBase):
-    pass
-
-
-class ContenidoOut(ContenidoBase):
-    id: int
+    contenidos: List[ContenidoOut] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # =======================
 # LOGIN / AUTH
@@ -178,4 +180,4 @@ class LoginOut(BaseModel):
     image_url: str | None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

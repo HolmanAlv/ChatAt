@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List
 import os
@@ -10,11 +10,11 @@ from app.database import get_db
 
 router = APIRouter()
 
-UPLOAD_DIR = "static"
+UPLOAD_DIR = "uploads"
 
 @router.post("/", response_model=schemas.ContenidoOut, status_code=status.HTTP_201_CREATED)
 def upload_content(
-    mensaje_id: int,
+    mensaje_id: int = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -34,7 +34,7 @@ def upload_content(
         shutil.copyfileobj(file.file, buffer)
 
     # URL accesible
-    file_url = f"/static/{unique_name}"
+    file_url = f"/uploads/{unique_name}"
 
     # Guardar registro en la base de datos
     content = models.Contenido(

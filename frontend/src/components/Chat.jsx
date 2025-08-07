@@ -1,16 +1,21 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import { getBackendUrl } from "../config";
 
 export default function Chat() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const codigo = params.get("codigo"); // ID del receptor o del grupo
+  const codigo = params.get("codigo");
   const nombre = params.get("nombre");
-  const tipo = params.get("tipo"); // "Grupo" o "Privado"
+  const tipo = params.get("tipo");
+  
+  // Configuración del backend
+  const BACKEND_URL = getBackendUrl();
 
   const [mensajes, setMensajes] = useState([]);
   const [nuevoMensaje, setNuevoMensaje] = useState("");
   const [archivo, setArchivo] = useState(null);
+  const [previewArchivo, setPreviewArchivo] = useState(null);
   const mensajesEndRef = useRef(null);
 
   const miUsuarioId = parseInt(localStorage.getItem("userId"));
@@ -19,71 +24,88 @@ export default function Chat() {
     mensajesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Cargar mensajes desde el backend
-  const cargarMensajes = async () => {
-    try {
-      let url = "";
-      if (tipo === "Grupo") {
-        url = `messages?group_id=${codigo}`;
-      } else {
-        url = `messages?user1_id=${miUsuarioId}&user2_id=${codigo}`;
-      }
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error("Error al cargar mensajes");
-      const data = await resp.json();
-      setMensajes(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+     const cargarMensajes = useCallback(async () => {
+     try {
+              let url = "";
+        if (tipo === "Grupo") {
+          url = `${BACKEND_URL}/messages?group_id=${codigo}`;
+        } else {
+          url = `${BACKEND_URL}/messages?user1_id=${miUsuarioId}&user2_id=${codigo}`;
+        }
+       const resp = await fetch(url);
+       if (!resp.ok) throw new Error("Error al cargar mensajes");
+       const data = await resp.json();
+       setMensajes(data);
+     } catch (error) {
+       console.error(error);
+     }
+   }, [tipo, codigo, miUsuarioId, BACKEND_URL]);
 
   useEffect(() => {
     cargarMensajes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [cargarMensajes]);
 
   useEffect(() => {
     scrollToBottom();
   }, [mensajes]);
 
-  // Enviar mensaje al backend
   const enviarMensaje = async (e) => {
     e.preventDefault();
     if (!nuevoMensaje.trim() && !archivo) return;
 
     try {
-      const resp = await fetch("messages/", {
+      // Si solo hay archivo sin texto, enviar un mensaje con texto vacío
+      const textoMensaje = nuevoMensaje.trim() || (archivo ? "" : null);
+      
+             const resp = await fetch(`${BACKEND_URL}/messages/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           emisor_id: miUsuarioId,
           receptor_id: tipo === "Grupo" ? null : parseInt(codigo),
           grupo_id: tipo === "Grupo" ? parseInt(codigo) : null,
-          texto: nuevoMensaje,
+          texto: textoMensaje,
         }),
       });
 
       if (!resp.ok) throw new Error("Error al enviar mensaje");
       const msg = await resp.json();
 
-      // Adjuntar archivo si existe
       if (archivo) {
         const formData = new FormData();
         formData.append("mensaje_id", msg.id);
         formData.append("file", archivo);
-
-        await fetch("content/", {
-          method: "POST",
-          body: formData,
-        });
+        
+                 try {
+           const contentResp = await fetch(`${BACKEND_URL}/content/`, {
+            method: "POST",
+            body: formData,
+          });
+          
+          if (!contentResp.ok) {
+            const errorText = await contentResp.text();
+            console.error("Error al subir archivo:", errorText);
+          }
+        } catch (error) {
+          console.error("Error en la petición:", error);
+        }
       }
 
       setNuevoMensaje("");
       setArchivo(null);
-
-      await cargarMensajes(); // refrescar lista
+      setPreviewArchivo(null);
+      await cargarMensajes();
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleArchivoSeleccionado = (file) => {
+    setArchivo(file);
+    if (file && file.type.startsWith("image/")) {
+      setPreviewArchivo(URL.createObjectURL(file));
+    } else {
+      setPreviewArchivo(null);
     }
   };
 
@@ -105,7 +127,7 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* Lista de mensajes */}
+      {/* Contenedor mensajes */}
       <div className="bg-white rounded-xl shadow-md p-4 h-[60vh] overflow-y-auto mb-4">
         {mensajes.length === 0 ? (
           <p className="text-center text-gray-400">No hay mensajes aún.</p>
@@ -124,7 +146,55 @@ export default function Chat() {
                   {m.emisor_nombre ?? `Usuario ${m.emisor_id}`}
                 </strong>
               )}
-              <p>{m.texto ?? "Mensaje sin texto"}</p>
+              {m.texto && <p>{m.texto}</p>}
+              {m.contenidos && m.contenidos.length > 0 && (
+                <div className="mt-2">
+                  {m.contenidos.map((c, idx) => (
+                    <div key={idx} className="mt-2">
+                                             {c.tipo_archivo?.startsWith("image/") ? (
+                         <div className="flex justify-center">
+                           <img
+                             src={`${BACKEND_URL}${c.archivo_url}`}
+                             alt="adjunto"
+                             className="max-w-[400px] max-h-[400px] object-contain rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+                             onClick={() => window.open(`${BACKEND_URL}${c.archivo_url}`, '_blank')}
+                             onError={(e) => {
+                               e.currentTarget.style.display = "none";
+                             }}
+                           />
+                         </div>
+                      ) : c.tipo_archivo ? (
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                          <span className="text-2xl">
+                            {c.tipo_archivo.startsWith("video/") ? "🎥" :
+                             c.tipo_archivo.startsWith("audio/") ? "🎵" :
+                             c.tipo_archivo.includes("pdf") ? "📄" :
+                             c.tipo_archivo.includes("word") || c.tipo_archivo.includes("document") ? "📝" :
+                             c.tipo_archivo.includes("excel") || c.tipo_archivo.includes("spreadsheet") ? "📊" :
+                             c.tipo_archivo.includes("zip") || c.tipo_archivo.includes("rar") ? "📦" :
+                             "📎"}
+                          </span>
+                          <div className="flex-1">
+                                                         <a
+                               href={`${BACKEND_URL}${c.archivo_url}`}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               className="text-blue-600 hover:text-blue-800 font-medium"
+                             >
+                              {c.texto || "Descargar archivo"}
+                            </a>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {c.tipo_archivo}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-red-500 text-sm">Tipo de archivo no reconocido: {c.tipo_archivo}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
               <small className="block text-gray-400">
                 {new Date(m.fecha_envio).toLocaleString()}
               </small>
@@ -133,6 +203,32 @@ export default function Chat() {
         )}
         <div ref={mensajesEndRef} />
       </div>
+
+      {/* Preview de archivo */}
+      {previewArchivo && (
+        <div className="mb-4 bg-white rounded-lg shadow-lg p-4 flex items-center gap-4">
+          <img
+            src={previewArchivo}
+            alt="Vista previa"
+            className="h-20 w-20 object-cover rounded-lg shadow"
+          />
+          <div className="flex-1">
+            <p className="text-gray-700 font-medium">{archivo.name}</p>
+            <p className="text-xs text-gray-500">
+              {(archivo.size / 1024 / 1024).toFixed(2)} MB
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setArchivo(null);
+              setPreviewArchivo(null);
+            }}
+            className="text-red-500 hover:text-red-700 text-xl"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Enviar mensaje */}
       <form
@@ -146,12 +242,13 @@ export default function Chat() {
           placeholder="Escribe tu mensaje..."
           className="flex-1 border rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-300"
         />
-        <label className="cursor-pointer bg-gray-200 rounded-md px-3 py-2 hover:bg-gray-300">
-          📎
+        <label className="cursor-pointer bg-gray-200 rounded-md px-3 py-2 hover:bg-gray-300 transition-colors">
+          <span className="text-lg">📎</span>
           <input
             type="file"
-            onChange={(e) => setArchivo(e.target.files[0])}
+            onChange={(e) => handleArchivoSeleccionado(e.target.files[0])}
             className="hidden"
+            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar"
           />
         </label>
         <button
