@@ -1,110 +1,51 @@
-# 📱 Sistema de Mensajería tipo WhatsApp
+# 📱 ChatAt
 
-Este proyecto es una app de mensajería en tiempo real inspirada en WhatsApp. Incluye funcionalidades como:
-- Chats privados y grupales
-- Envío de mensajes con texto
-- Archivos adjuntos (imágenes, videos, audio, PDF, Word, Excel, etc.)
-- Vista previa de archivos
-- Interfaz moderna y responsiva con React + Tailwind
-- Backend robusto con FastAPI + PostgreSQL
+Aplicación de mensajería en tiempo real, al estilo WhatsApp, con chats privados y grupales, amistades y envío de archivos. Es un proyecto académico en equipo de 2025.
 
----
+## ⚙️ Stack
 
-## ⚙️ Tecnologías utilizadas
+- **Backend:** FastAPI, SQLAlchemy y PostgreSQL 15. Los mensajes llegan en tiempo real por WebSocket y las contraseñas se guardan con hash bcrypt.
+- **Frontend:** React 19 (Create React App) con React Router y TailwindCSS, servido con nginx.
+- **Infra:** Docker Compose (backend, frontend y base de datos con el esquema inicial cargado).
 
-**Frontend:**
-- React (con Vite)
-- TailwindCSS
+## ✨ Funcionalidades
 
-**Backend:**
-- FastAPI (Python)
-- SQLAlchemy
-- PostgreSQL
+- Registro e inicio de sesión.
+- Búsqueda de usuarios y solicitudes de amistad (enviar, aceptar, rechazar).
+- Chats privados y grupales; grupos con enlace de invitación (token) y gestión de miembros.
+- Adjuntos (imágenes, video, audio, PDF, Word, Excel…) con vista previa.
+- Entrega en tiempo real: al enviar un mensaje, el backend lo empuja por WebSocket a los destinatarios conectados.
 
----
+## 🚀 Cómo correrlo
 
-## 🧪 Cómo ejecutar el proyecto
+```bash
+cp .env.example .env
+docker compose up --build
+```
 
-### 🔧 Requisitos
-- Python 3.10+
-- Node.js 18+
-- PostgreSQL 13+
-- Git
+| Componente | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| API y Swagger | http://localhost:8000/docs |
+| PostgreSQL | localhost:5432 |
 
----
+Sin Docker (requiere Python 3.10+, Node.js 18+ y PostgreSQL con `database/init.sql` cargado; `PGHOST=localhost` en `.env`):
 
-### 🚀 Backend (FastAPI)
+```bash
+cd backend && pip install -r requirements.txt && uvicorn app.main:app --reload
+cd frontend && npm install && npm start
+```
 
-1. **Clonar repositorio**
-   ```bash
-   git clone https://github.com/tu_usuario/tu_repo.git
-   cd tu_repo/backend
-Crear entorno virtual
+## 📂 Estructura
 
-python -m venv venv
-source venv/bin/activate  # o .\venv\Scripts\activate en Windows
+```
+backend/app/routers/   auth, users, friends, groups, messages, content, ws
+backend/app/models/    modelos SQLAlchemy
+backend/app/schemas/   validación y formato de datos
+database/init.sql      esquema de PostgreSQL
+frontend/src/          componentes React (Login, Register, MenuPrincipal, Chat)
+```
 
-Instalar dependencias
+## 🧑‍💻 Autor
 
-pip install -r requirements.txt
-
-Configurar base de datos
-
-Crear base de datos PostgreSQL:
-
-    CREATE DATABASE chatapp;
-
-Ajustar la URL en .env o database.py:
-
-    postgresql://usuario:contraseña@localhost/chatapp
-
-Ejecutar script SQL para crear tablas
-
-    psql -U tu_usuario -d chatapp -f Modelo.sql
-
-Iniciar servidor FastAPI
-
-    uvicorn app.main:app --reload
-
-📍 Disponible en: http://localhost:8000
-
-🌐 Frontend (React)
-
-  Ir a carpeta del frontend  
-
-    cd ../frontend
-
-  Instalar dependencias
-
-    npm install
-
-  Configurar backend
-  
-  En src/config.js:
-
-    export const getBackendUrl = () => "http://localhost:8000";
-
-  Ejecutar
-
-    npm run dev
-
-  📍 Disponible en: http://localhost:3000
-
-🌉 Puertos utilizados
-Componente	Puerto
-Backend	localhost:8000
-Frontend	localhost:3000
-PostgreSQL	5432 (por defecto)
-📂 Recursos clave
-
-    Modelo.sql: estructura de base de datos
-
-    Chat.jsx: interfaz principal de mensajería
-
-    content/: almacenamiento de archivos
-
-    schemas.py: validación y formato de datos
-
-🧑‍💻 Autor
-
-    Desarrollado por <Localhost Inc./> con fines académicos y de aprendizaje.
+Desarrollado por <Localhost Inc./> con fines académicos y de aprendizaje.
